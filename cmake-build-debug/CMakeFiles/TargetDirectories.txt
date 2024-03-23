@@ -1,0 +1,4 @@
+C:/Users/atabe/OneDrive - metu.edu.tr/Documents/METU NCC  second semester/CNG 140/Assignments/Assignment 1/Crag_Game/cmake-build-debug/CMakeFiles/Crag_Game.dir
+C:/Users/atabe/OneDrive - metu.edu.tr/Documents/METU NCC  second semester/CNG 140/Assignments/Assignment 1/Crag_Game/cmake-build-debug/CMakeFiles/Test.dir
+C:/Users/atabe/OneDrive - metu.edu.tr/Documents/METU NCC  second semester/CNG 140/Assignments/Assignment 1/Crag_Game/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/atabe/OneDrive - metu.edu.tr/Documents/METU NCC  second semester/CNG 140/Assignments/Assignment 1/Crag_Game/cmake-build-debug/CMakeFiles/rebuild_cache.dir
