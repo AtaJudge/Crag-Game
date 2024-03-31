@@ -1,16 +1,27 @@
+/*
+ * Ata Berke Yargıç - 2638328
+ * CNG 140 Assignment-1 (Crag Game)
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
-int roll_a_dice(); //Global prototype to call it in other functions.
-void roll_again(char, int, int, int);
+// Global prototypes to call them in other functions.
+int roll_a_dice();
+
+int roll_again(char);
+
+int score_table(int, int, int);
+
+void scoresheet(int, int, int);
 
 char ask_roll_again();
 
 int main() {
-    //Prototypes.
-    void play_computer();
-    void play_user(int, int, int, int);
+    //Function prototypes.
+    int play_computer();
+    int play_user();
     int game_start(int, int);
 
 
@@ -19,15 +30,15 @@ int main() {
 
 
     //Variable definitions.
-    int round_val; // Holds the data of the game length in type of rounds.
+    int round_val = 0; // Holds the data of the game length in type of rounds.
     int round_count = 1; // Holds the data of how many round has been played.
     int dice1, dice2, dice3;
-    int round_point;
-    int C_point; // Computer's total point.
-    int P_point; // Player's total point.
+    int round_point = 0;
+    int C_point = 0; // Computer's total point.
+    int P_point = 0; // Player's total point.
     int player_val; // Holds the data of who is going to start first.
-
-    char is_roll_again;
+    int roll_this; // Value of the dice that is going to rolled again.
+    char is_roll_again; // Holds the data of does the user wants to reroll or not.
 
 
     //Game starts here with a welcome message.
@@ -37,6 +48,7 @@ int main() {
     //Set game length.
     printf("How many rounds would you like to play?");
     scanf("%d", &round_val);
+    fflush(stdin); // To prevent errors happened because of the multiple inputs.
 
     // Decide who is going to start.
     player_val = game_start(dice1, dice2);
@@ -45,19 +57,55 @@ int main() {
     // Main game part.
     while (round_val) {
         if (player_val == 1) { // Player starts
+            printf("\n\nROUND %d --- Your Turn\n", round_count);
+            printf("======================================================");
 
-            // Let the player play their turn.
-            play_user(dice1, dice2, dice3, round_count);
-            is_roll_again = ask_roll_again();
-            roll_again(is_roll_again, dice1, dice2, dice3);
+            round_point = play_user(); // User plays.
+            P_point += round_point; // Calculate total score.
+            printf("\n\nYour Score: %d Total Score: %d", round_point, P_point);
+
+            printf("\n\nROUND %d --- My Turn\n", round_count);
+            printf("======================================================");
+
+            round_point = play_computer(); // Computer plays.
+            C_point += round_point; // Calculate total score.
+            printf("\nMy Score: %d Total Score: %d", round_point, C_point);
+
+            scoresheet(P_point, C_point, round_count);
+
+            // Update round data at the end of the round.
+            round_count += 1;
+            round_val -= 1;
+        } else if (player_val == 2) { // Computer starts
+            printf("\n\nROUND %d --- My Turn\n", round_count);
+            printf("======================================================");
+
+            round_point = play_computer(); // Computer plays.
+            C_point += round_point; // Add round's point to computer's total points.
+            printf("\nMy Score: %d Total Score: %d", round_point, C_point);
+
+            printf("\n\nROUND %d --- Your Turn\n", round_count);
+            printf("======================================================");
+
+            round_point = play_user(); // User plays.
+            P_point += round_point; // Add round's point to player's total points.
+            printf("\n\nYour Score: %d Total Score: %d", round_point, P_point);
+
+            scoresheet(P_point, C_point, round_count); /* Display score sheet at the end of
+                                                                                    the each round*/
 
             // Set round data at the end of the round.
             round_count += 1;
             round_val -= 1;
-        } else if (player_val == 2) { // Computer starts
-            play_computer();
         }
     }
+
+    if (C_point > P_point)
+        printf("\nI AM THE WINNER!!");
+    else if (P_point > C_point)
+        printf("\nYOU ARE THE WINNER!!");
+    else
+        printf("\nTIE!!");
 
     return 0;
 }
@@ -93,87 +141,148 @@ int game_start(int diceP, int diceC) {
 }
 
 
-// Function to let player play the game.
-void play_user(int diceA, int diceB, int diceC, int round) {
-    printf("\n\nROUND %d --- Your Turn\n", round);
-    printf("------------------------------------\n\n");
+// Function to roll dice for the player.
+int play_user() {
+    int dice_sum, roll, is_roll_again;
+    int diceA, diceB, diceC;
 
     // Roll 3 dice for player
     diceA = roll_a_dice();
     diceB = roll_a_dice();
     diceC = roll_a_dice();
 
-    printf("You got [Dice 1]: %d, [Dice 2]: %d, [Dice 3]: %d\n", diceA, diceB, diceC);
+    printf("\n\nYou got => [Dice 1]: %d, [Dice 2]: %d, [Dice 3]: %d", diceA, diceB, diceC);
+
+    // Ask if user wants to reroll the dice.
+    is_roll_again = ask_roll_again();
+    roll = roll_again(is_roll_again);
+
+    // If user wants to reroll a dice, roll that.
+    if (roll == 1) {
+        diceA = roll_a_dice();
+        printf("\nYou got => [Dice 1]: %d, [Dice 2]: %d, [Dice 3]: %d", diceA, diceB, diceC);
+    } else if (roll == 2) {
+        diceB = roll_a_dice();
+        printf("\nYou got => [Dice 1]: %d, [Dice 2]: %d, [Dice 3]: %d", diceA, diceB, diceC);
+    } else if (roll == 3) {
+        diceC = roll_a_dice();
+        printf("\nYou got => [Dice 1]: %d, [Dice 2]: %d, [Dice 3]: %d", diceA, diceB, diceC);
+    }
+
+    dice_sum = score_table(diceA, diceB, diceC);
+
+    return dice_sum;
 }
 
 
-void play_computer() {
+int play_computer() {
+    int dice_sum, roll, is_roll_again;
+    int diceA, diceB, diceC;
 
+    // Roll 3 dice for computer.
+    diceA = roll_a_dice();
+    diceB = roll_a_dice();
+    diceC = roll_a_dice();
+
+    printf("\nI rolled them and I got");
+    printf("\n=> [Dice 1]: %d, [Dice 2]: %d, [Dice 3]: %d\n", diceA, diceB, diceC);
+
+    // Determine when the computer wants to reroll dice.
+    if (diceA == 4 && diceB == 5 && diceC != 6) {
+        diceC = roll_a_dice();
+        printf("\nRolled dice 3!");
+        printf("\n=> [Dice 1]: %d, [Dice 2]: %d, [Dice 3]: %d\n", diceA, diceB, diceC);
+    } else if (diceA == 4 && diceC == 6 && diceB != 5) {
+        diceB = roll_a_dice();
+        printf("\nRolled dice 2!");
+        printf("\n=> [Dice 1]: %d, [Dice 2]: %d, [Dice 3]: %d\n", diceA, diceB, diceC);
+    } else if (diceB == 5 && diceC == 6 && diceA != 4) {
+        diceA = roll_a_dice();
+        printf("\nRolled dice 1!");
+        printf("\n=> [Dice 1]: %d, [Dice 2]: %d, [Dice 3]: %d\n", diceA, diceB, diceC);
+    }
+
+    dice_sum = score_table(diceA, diceB, diceC); // Calculate the computer's points at the end of the round.
+
+    return dice_sum;
 }
 
 
 // Function to learn if player wants to roll again and returns the answer.
 char ask_roll_again() {
     char answer;
-    printf("\nShall I roll for you (Y/N)? ");
+    printf("\nShall I roll for you (Y/N)?");
     scanf(" %c", &answer);
+    fflush(stdin);
     return answer;
 }
 
 
 // Function to roll dice again if player wants.
-void roll_again(char is_again, int A_dice, int B_dice, int C_dice) {
-    int keep_val; // Input value about which dices are going to kept.
-    int keepA = 0, keepB = 0, keepC = 0; // To mark which dice are kept.
-    int wrong = 0; // Is the dice input wrong?
+int roll_again(char is_again) {
+    int x, y; // Variables to mark two kept dice.
+    int reroll; // Variable to return the value of unkept dice.
 
-    if (is_again == 'Y') {
-        printf("\nWhich dice do you want to keep? ");
+    if (is_again == 'Y' || is_again == 'y') { // If user wants to reroll the dice, return the data of that dice.
+        printf("\nWhich ones do you want to keep?");
+        scanf("%d %d", &x, &y);
+        fflush(stdin); // Clean the buffer to prevent errors if user enters more than 2 input and take first 2.
 
-        do {
-            scanf(" %d", &keep_val);
-            switch (keep_val) {
-                case 1:
-                    keepA = 1; // Mark the first dice to kept.
-                    break;
-                case 2:
-                    keepB = 1; // Mark the second dice to kept.
-                    break;
-                case 3:
-                    keepC = 1; // Mark the third dice to kept.
-                    break;
-                default:
-                    wrong = 1;
-                    fflush(stdin);
-                    break;
-            }
-        } while (keep_val == 1);
-
-        // Take inputs again if there is any wrong input.
-        if (wrong == 1) {
-            printf("\nSorry, wrong input!");
-            roll_again(is_again, A_dice, B_dice, C_dice);
+        if (x == 1 && y == 2) // If user choose 1 and 2, keep 3
+            reroll = 3;
+        else if (x == 1 && y == 3) // If user choose 1 and 3, keep 2
+            reroll = 2;
+        else if (x == 2 && y == 3) // If user choose 2 and 3, keep 1
+            reroll = 1;
+        else { // Error handling for dice input.
+            printf("Sorry, wrong input!");
+            reroll = roll_again(is_again);
         }
-
-
-        if (keepA == 0)
-            A_dice = roll_a_dice(); // Roll the first dice again.
-        if (keepB == 0)
-            B_dice = roll_a_dice(); // Roll the second dice again.
-        if (keepC == 0)
-            C_dice = roll_a_dice(); // Roll the third dice again.
-
-        printf("\nThese are going to be kept: %d, %d, %d", keepA, keepB, keepC);
-        printf("\nNew dices are these: [Dice 1]: %d, [Dice 2]: %d, [Dice 3]: %d",
-               A_dice, B_dice, C_dice);
-
-    } else if (is_again == 'N') {
-        printf("\nDo nothing...");
-    } else {
-        printf("\nSorry, I don't understand!");
+    } else if (is_again == 'N' || is_again == 'n') { // If user don't want to reroll a dice, return 0.
+        return 0;
+    } else { // Error handling for yes/no question.
+        printf("Sorry, I don't understand!");
         is_again = ask_roll_again();
-        roll_again(is_again, A_dice, B_dice, C_dice);
+        reroll = roll_again(is_again);
     }
+
+    return reroll;
+}
+
+
+// A function to calculate scores according to the scoring table.
+int score_table(int diceA, int diceB, int diceC) {
+    int dice_sum; // Variable for the score
+
+    if ((diceA == diceB || diceA == diceC || diceB == diceC) && (diceA + diceB + diceC) == 13) {
+        dice_sum = 50;
+        printf("\nCrag!!");
+    } else if ((diceA + diceB + diceC) == 13) {
+        dice_sum = 26;
+    } else if (diceA == diceB && diceA == diceC) {
+        dice_sum = 25;
+    } else if (diceA == 1 && diceB == 2 && diceC == 3) {
+        dice_sum = 20;
+    } else if (diceA == 4 && diceB == 5 && diceC == 6) {
+        dice_sum = 20;
+    } else if (diceA == 1 && diceB == 3 && diceC == 5) {
+        dice_sum = 20;
+    } else if (diceA == 2 && diceB == 4 && diceC == 6) {
+        dice_sum = 20;
+    } else
+        dice_sum = diceA + diceB + diceC;
+
+    return dice_sum;
+}
+
+
+// A function to display total score at the end of the each round.
+void scoresheet(int player_total, int computer_total, int round) {
+    printf("\n\n\nOur scoreboard after round %d:", round);
+    printf("\n=============================");
+    printf("\nMy score     Your score");
+    printf("\n%d%14d", computer_total, player_total);
+    printf("\n\n");
 }
 
 
